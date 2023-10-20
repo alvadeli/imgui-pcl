@@ -23,3 +23,4 @@ project ("imgui-pcl")
 
 # Include sub-projects.
 add_subdirectory ("src")
+add_subdirectory ("vendor")

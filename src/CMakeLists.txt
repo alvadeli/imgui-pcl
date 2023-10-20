@@ -2,6 +2,10 @@
 # project specific logic here.
 #
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+
+
 # Add source to this project's executable.
 add_executable (imgui-pcl "imgui-pcl.cpp" "imgui-pcl.h")
 
@@ -11,9 +15,12 @@ endif()
 
 # TODO: Add tests and install targets if needed.
 find_package(PCL CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 
 target_link_libraries(
 	${PROJECT_NAME} 
 	PRIVATE 
 	${PCL_LIBRARIES}
+	glfw
+	imgui
 )
