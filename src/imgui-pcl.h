@@ -6,7 +6,8 @@
 #include <iostream>
 //#include <pcl/point_cloud.h>
 //#include <pcl/point_types.h>
-//#include <pcl/visualization/pcl_visualizer.h>
+//include "PclCloudViewer.h"
+#include <pcl/visualization/pcl_visualizer.h>
 
 
 
@@ -14,4 +15,3 @@ int main(int, char**);
 
 void NewFrame();
 
-void CreateDockSpace();

@@ -3,35 +3,7 @@
 
 #include "imgui-pcl.h"
 
-//int main()
-//{
-//    auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(200, 1);
-//    for (auto& point : *cloud)
-//    {
-//        point.x = 1024 * rand() / (RAND_MAX + 1.0f);
-//        point.y = 1024 * rand() / (RAND_MAX + 1.0f);
-//        point.z = 1024 * rand() / (RAND_MAX + 1.0f);
-//    }
-//
-//    auto viewer = pcl::visualization::PCLVisualizer("3d Viewer");
-//
-//    viewer.addPointCloud(cloud);
-//
-//
-//    while (!viewer.wasStopped())
-//    {
-//        viewer.spinOnce();
-//    }
-//}
 
-// Dear ImGui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
-// (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
-
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
-// - Introduction, links and more at the top of imgui.cpp
 #include <GL/gl3w.h>  
 #include <GLFW/glfw3.h> 
 
@@ -114,26 +86,33 @@ int main(int, char**)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    //auto renderer1 = vtkSmartPointer<vtkRenderer>::New();
+    //auto renderWindow1 = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+    //renderWindow1->AddRenderer(renderer1);
+    //pcl::visualization::PCLVisualizer pclViewer = pcl::visualization::PCLVisualizer(pcl::visualization::PCLVisualizer(renderer1, renderWindow1, "edgeDetectorviewer", false));
+    //pclViewer.setBackgroundColor(0.85, 0.85, 0.85);
+    //pclViewer.setShowFPS(false);
+
+
     // Initialize VtkViewer objects
     VtkViewer vtkViewer1;
-    vtkViewer1.addActor(actor);
+    vtkSmartPointer<vtkRenderer> renderer = vtkViewer1.getRenderer();
+    vtkSmartPointer<vtkRenderWindow> renderWindow = vtkViewer1.getRenderWindow();
 
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
+    auto pclViewer = pcl::visualization::PCLVisualizer(renderer, renderWindow, "pclViewer", false);
+    
+
+    auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(200, 1);
+    for (auto& point : *cloud)
+    {
+        point.x = 1024 * rand() / (RAND_MAX + 1.0f);
+        point.y = 1024 * rand() / (RAND_MAX + 1.0f);
+        point.z = 1024 * rand() / (RAND_MAX + 1.0f);
+    }
+
+
+    pclViewer.addPointCloud(cloud);
+    //vtkViewer1.addActor(actor);
 
     // Our state
     bool show_demo_window = true;
@@ -202,6 +181,7 @@ int main(int, char**)
         // 4. Show a simple VtkViewer Instance (Always Open)
         ImGui::SetNextWindowSize(ImVec2(360, 240), ImGuiCond_FirstUseEver);
         ImGui::Begin("Vtk Viewer 1", nullptr, VtkViewer::NoScrollFlags());
+
         vtkViewer1.render(); // default render size = ImGui::GetContentRegionAvail()
         ImGui::End();
 
@@ -251,68 +231,7 @@ void NewFrame()
 }
 
 
-void CreateDockSpace() {
 
-   //ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-
-
-    //static bool opt_fullscreen = true;
-    //static bool opt_padding = false;
-    //static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-    //// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-    //// because it would be confusing to have two docking targets within each others.
-    //ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    //if (opt_fullscreen)
-    //{
-    //    const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    //    ImGui::SetNextWindowPos(viewport->WorkPos);
-    //    ImGui::SetNextWindowSize(viewport->WorkSize);
-    //    ImGui::SetNextWindowViewport(viewport->ID);
-    //    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    //    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    //    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    //    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    //}
-    //else
-    //{
-    //    dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-    //}
-
-    //// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-    //// and handle the pass-thru hole, so we ask Begin() to not render a background.
-    //if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-    //    window_flags |= ImGuiWindowFlags_NoBackground;
-
-    //// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-    //// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-    //// all active windows docked into it will lose their parent and become undocked.
-    //// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-    //// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-    //if (!opt_padding)
-    //    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-
-    //ImGui::Begin("DockSpace Demo", nullptr, window_flags);
-
-    //if (!opt_padding)
-    //    ImGui::PopStyleVar();
-
-    //if (opt_fullscreen)
-    //    ImGui::PopStyleVar(2);
-
-
-    //// Submit the DockSpace
-    //ImGuiIO& io = ImGui::GetIO();
-    //if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-    //{
-    //    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-    //    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-    //}
-
-
-    //ImGui::End();
-}
 
 
 

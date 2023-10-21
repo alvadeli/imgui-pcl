@@ -9,7 +9,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 
 # Add source to this project's executable.
-add_executable (imgui-pcl "imgui-pcl.cpp" "imgui-pcl.h")
+add_executable (imgui-pcl "imgui-pcl.cpp" "imgui-pcl.h" "MainWindow.h" "MainWindow.cpp")
 
 #if (CMAKE_VERSION VERSION_GREATER 3.12)
 #  set_property(TARGET imgui-pcl PROPERTY CXX_STANDARD 20)
