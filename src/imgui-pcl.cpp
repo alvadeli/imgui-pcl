@@ -24,7 +24,7 @@
 //    }
 //}
 
-// Dear ImGui: standalone example application for GLFW + OpenGL2, using legacy fixed pipeline
+// Dear ImGui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
 
 // Learn about Dear ImGui:
@@ -32,26 +32,23 @@
 // - Getting Started      https://dearimgui.com/getting-started
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
+#include <GL/gl3w.h>  
+#include <GLFW/glfw3.h> 
 
-// **DO NOT USE THIS CODE IF YOUR CODE/ENGINE IS USING MODERN OPENGL (SHADERS, VBO, VAO, etc.)**
-// **Prefer using the code in the example_glfw_opengl2/ folder**
-// See imgui_impl_glfw.cpp for details.
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl2.h"
+#include "imgui_impl_opengl3.h"
+#include <VtkViewer.h>
 #include <stdio.h>
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#endif
-#include <GLFW/glfw3.h>
 
-// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
-// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
-// Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
-#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
-#pragma comment(lib, "legacy_stdio_definitions")
-#endif
+
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+
+#include <imgui_vtk_demo.h>
+
+
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -61,16 +58,34 @@ static void glfw_error_callback(int error, const char* description)
 // Main code
 int main(int, char**)
 {
+    // Setup pipeline
+    auto actor = SetupDemoPipeline();
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
 
+
+    // GL 3.0 + GLSL 130
+  
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+    const char* glsl_version = "#version 130";
+
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL2 example", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
+
+    // Initialize OpenGL loader
+    if (gl3wInit() != 0) {
+        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+        return 1;
+    }
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -97,7 +112,11 @@ int main(int, char**)
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL2_Init();
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Initialize VtkViewer objects
+    VtkViewer vtkViewer1;
+    vtkViewer1.addActor(actor);
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -107,6 +126,7 @@ int main(int, char**)
     // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
@@ -118,10 +138,18 @@ int main(int, char**)
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
+    bool vtk_2_open = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
+#ifdef __EMSCRIPTEN__
+    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
+    // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
+    io.IniFilename = nullptr;
+    EMSCRIPTEN_MAINLOOP_BEGIN
+#else
     while (!glfwWindowShouldClose(window))
+#endif
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -130,10 +158,8 @@ int main(int, char**)
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL2_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        NewFrame();
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
@@ -149,6 +175,7 @@ int main(int, char**)
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
+            ImGui::Checkbox("VTK Viewer #2", &vtk_2_open);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -172,6 +199,12 @@ int main(int, char**)
             ImGui::End();
         }
 
+        // 4. Show a simple VtkViewer Instance (Always Open)
+        ImGui::SetNextWindowSize(ImVec2(360, 240), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Vtk Viewer 1", nullptr, VtkViewer::NoScrollFlags());
+        vtkViewer1.render(); // default render size = ImGui::GetContentRegionAvail()
+        ImGui::End();
+
         // Rendering
         ImGui::Render();
         int display_w, display_h;
@@ -179,14 +212,7 @@ int main(int, char**)
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        // If you are using this code with non-legacy OpenGL header/contexts (which you should not, prefer using imgui_impl_opengl3.cpp!!),
-        // you may need to backup/reset/restore other state, e.g. for current shader using the commented lines below.
-        //GLint last_program;
-        //glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-        //glUseProgram(0);
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-        //glUseProgram(last_program);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
@@ -199,12 +225,14 @@ int main(int, char**)
             glfwMakeContextCurrent(backup_current_context);
         }
 
-        glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
     }
+#ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_MAINLOOP_END;
+#endif
 
     // Cleanup
-    ImGui_ImplOpenGL2_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
@@ -214,4 +242,78 @@ int main(int, char**)
     return 0;
 }
 
+void NewFrame()
+{
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
 
+
+void CreateDockSpace() {
+
+   //ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+
+    //static bool opt_fullscreen = true;
+    //static bool opt_padding = false;
+    //static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+    //// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+    //// because it would be confusing to have two docking targets within each others.
+    //ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    //if (opt_fullscreen)
+    //{
+    //    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    //    ImGui::SetNextWindowPos(viewport->WorkPos);
+    //    ImGui::SetNextWindowSize(viewport->WorkSize);
+    //    ImGui::SetNextWindowViewport(viewport->ID);
+    //    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    //    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    //    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    //    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    //}
+    //else
+    //{
+    //    dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+    //}
+
+    //// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+    //// and handle the pass-thru hole, so we ask Begin() to not render a background.
+    //if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+    //    window_flags |= ImGuiWindowFlags_NoBackground;
+
+    //// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+    //// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+    //// all active windows docked into it will lose their parent and become undocked.
+    //// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+    //// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+    //if (!opt_padding)
+    //    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+
+    //ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+
+    //if (!opt_padding)
+    //    ImGui::PopStyleVar();
+
+    //if (opt_fullscreen)
+    //    ImGui::PopStyleVar(2);
+
+
+    //// Submit the DockSpace
+    //ImGuiIO& io = ImGui::GetIO();
+    //if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+    //{
+    //    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+    //    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+    //}
+
+
+    //ImGui::End();
+}
+
+
+
+#

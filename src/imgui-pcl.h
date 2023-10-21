@@ -4,8 +4,14 @@
 #pragma once
 
 #include <iostream>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl/visualization/pcl_visualizer.h>
-//#include <imgui.h>
-// TODO: Reference additional headers your program requires here.
+//#include <pcl/point_cloud.h>
+//#include <pcl/point_types.h>
+//#include <pcl/visualization/pcl_visualizer.h>
+
+
+
+int main(int, char**);
+
+void NewFrame();
+
+void CreateDockSpace();
