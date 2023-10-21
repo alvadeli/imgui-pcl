@@ -19,7 +19,7 @@
 #include <vtkRenderer.h>
 
 // RGB Color in range [0.0, 1.0]
-#define DEFAULT_BACKGROUND 0.39, 0.39, 0.39
+#define DEFAULT_BACKGROUND 0, 0, 0
 // Alpha value in range [0.0, 1.0] where 1 = opaque
 #define DEFAULT_ALPHA 1
 

@@ -31,7 +31,7 @@ static void glfw_error_callback(int error, const char* description)
 int main(int, char**)
 {
     // Setup pipeline
-    auto actor = SetupDemoPipeline();
+    //auto actor = SetupDemoPipeline();
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -111,7 +111,8 @@ int main(int, char**)
     }
 
 
-    pclViewer.addPointCloud(cloud);
+    pclViewer.addPointCloud(cloud, "cloud");
+    pclViewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_POINT_SIZE, 2, "cloud");
     //vtkViewer1.addActor(actor);
 
     // Our state
@@ -180,7 +181,7 @@ int main(int, char**)
 
         // 4. Show a simple VtkViewer Instance (Always Open)
         ImGui::SetNextWindowSize(ImVec2(360, 240), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Vtk Viewer 1", nullptr, VtkViewer::NoScrollFlags());
+        ImGui::Begin("PointVloud Viewer", nullptr, VtkViewer::NoScrollFlags());
 
         vtkViewer1.render(); // default render size = ImGui::GetContentRegionAvail()
         ImGui::End();
