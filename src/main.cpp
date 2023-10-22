@@ -19,7 +19,7 @@
 #include <vtkActor.h>
 
 #include <imgui_vtk_demo.h>
-#include <pcl_visualizer_example.h>
+#include <PclCloudViewer.h>
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -86,15 +86,12 @@ int main(int, char**)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // Initialize VtkViewer objects
-    VtkViewer vtkViewer1;
-    vtkSmartPointer<vtkRenderer> renderer = vtkViewer1.getRenderer();
-    vtkSmartPointer<vtkRenderWindow> renderWindow = vtkViewer1.getRenderWindow();
-
-    auto pclViewer = pcl::visualization::PCLVisualizer(renderer, renderWindow, "pclViewer", false);
+    
+    PclCloudViewer cloudViewer;
     
     static int pointColor[3] = {128,128,128};
     static int pointSize = 3;
+    std::string cloudName = "cloud";
     auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZRGBA>>(200, 1);
     for (auto& point : *cloud)
     {
@@ -107,13 +104,8 @@ int main(int, char**)
         point.b = pointColor[2];
     }
   
-
-    //PclVisualizer cloudViewer(vtkViewer1, pclViewer);
-
-    //cloudViewer.AddPointCloud(cloud, "cloud");
-  
-    pclViewer.addPointCloud(cloud, "cloud");
-    pclViewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_POINT_SIZE, pointSize, "cloud");
+    cloudViewer.AddPointCloud(cloud, cloudName);
+    cloudViewer.SetCloudPointSize(pointSize, cloudName);
 
     // Our state
     bool show_demo_window = false;
@@ -195,7 +187,7 @@ int main(int, char**)
                 point.g = pointColor[1];
                 point.b = pointColor[2];
             }
-            pclViewer.updatePointCloud(cloud, "cloud");
+            cloudViewer.UpdatePointCloud(cloud, cloudName);
         }
         ImGui::Text("Green Component");
         if (ImGui::SliderInt("##Green", &pointColor[1], 0, 255))
@@ -206,7 +198,7 @@ int main(int, char**)
                 point.g = pointColor[1];
                 point.b = pointColor[2];
             }
-            pclViewer.updatePointCloud(cloud, "cloud");
+            cloudViewer.UpdatePointCloud(cloud, cloudName);
         }
         ImGui::Text("Blue Component");
         if (ImGui::SliderInt("##Blue", &pointColor[2], 0, 255))
@@ -217,13 +209,13 @@ int main(int, char**)
                 point.g = pointColor[1];
                 point.b = pointColor[2];
             }
-            pclViewer.updatePointCloud(cloud, "cloud");
+            cloudViewer.UpdatePointCloud(cloud, cloudName);
         }
 
         ImGui::Text("Point size");
         if (ImGui::SliderInt("##pointSize", &pointSize, 1, 5))
         {
-            pclViewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_POINT_SIZE, pointSize, "cloud");
+            cloudViewer.SetCloudPointSize(pointSize, cloudName);
         }
 
         if (ImGui::Button("Random Colors"))
@@ -236,16 +228,15 @@ int main(int, char**)
                 point.b = 255 * (1024 * rand() / (RAND_MAX + 1.0f));
             }
 
-            pclViewer.updatePointCloud(cloud, "cloud");
+            cloudViewer.UpdatePointCloud(cloud, "cloudName");
         }
         ImGui::End();
 
-        // 4. Show a simple VtkViewer Instance (Always Open)
+        // 4. Show a cloud viewer
         ImGui::SetNextWindowSize(ImVec2(360, 240), ImGuiCond_FirstUseEver);
         ImGui::Begin("Pointcloud Viewer", nullptr, VtkViewer::NoScrollFlags());
-        vtkViewer1.render();
+        cloudViewer.RenderUI();
 
-        //loudViewer.RenderUI(); // default render size = ImGui::GetContentRegionAvail()
         ImGui::End();
 
         // Rendering

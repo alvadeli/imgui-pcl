@@ -127,9 +127,10 @@ void VtkViewer::init(){
 	renderer->ResetCamera();
 	renderer->SetBackground(DEFAULT_BACKGROUND);
 	renderer->SetBackgroundAlpha(DEFAULT_ALPHA);
-
+	
 	interactorStyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
 	interactorStyle->SetDefaultRenderer(renderer);
+
 
 	interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
 	interactor->SetInteractorStyle(interactorStyle);
