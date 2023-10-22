@@ -1,8 +1,8 @@
 ﻿// imgui-pcl.cpp : Defines the entry point for the application.
 //
 
-#include "imgui-pcl.h"
-
+#include <iostream>
+#include <pcl/visualization/pcl_visualizer.h>
 
 #include <GL/gl3w.h>  
 #include <GLFW/glfw3.h> 
@@ -19,7 +19,7 @@
 #include <vtkActor.h>
 
 #include <imgui_vtk_demo.h>
-
+#include <pcl_visualizer_example.h>
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -47,7 +47,7 @@ int main(int, char**)
     const char* glsl_version = "#version 130";
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW + VTK and PCLViewer example", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -86,14 +86,6 @@ int main(int, char**)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    //auto renderer1 = vtkSmartPointer<vtkRenderer>::New();
-    //auto renderWindow1 = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-    //renderWindow1->AddRenderer(renderer1);
-    //pcl::visualization::PCLVisualizer pclViewer = pcl::visualization::PCLVisualizer(pcl::visualization::PCLVisualizer(renderer1, renderWindow1, "edgeDetectorviewer", false));
-    //pclViewer.setBackgroundColor(0.85, 0.85, 0.85);
-    //pclViewer.setShowFPS(false);
-
-
     // Initialize VtkViewer objects
     VtkViewer vtkViewer1;
     vtkSmartPointer<vtkRenderer> renderer = vtkViewer1.getRenderer();
@@ -101,25 +93,34 @@ int main(int, char**)
 
     auto pclViewer = pcl::visualization::PCLVisualizer(renderer, renderWindow, "pclViewer", false);
     
-
-    auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(200, 1);
+    static int pointColor[3] = {128,128,128};
+    static int pointSize = 3;
+    auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZRGBA>>(200, 1);
     for (auto& point : *cloud)
     {
         point.x = 1024 * rand() / (RAND_MAX + 1.0f);
         point.y = 1024 * rand() / (RAND_MAX + 1.0f);
         point.z = 1024 * rand() / (RAND_MAX + 1.0f);
+
+        point.r = pointColor[0];
+        point.g = pointColor[1];
+        point.b = pointColor[2];
     }
+  
 
+    //PclVisualizer cloudViewer(vtkViewer1, pclViewer);
 
+    //cloudViewer.AddPointCloud(cloud, "cloud");
+  
     pclViewer.addPointCloud(cloud, "cloud");
-    pclViewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_POINT_SIZE, 2, "cloud");
-    //vtkViewer1.addActor(actor);
+    pclViewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_POINT_SIZE, pointSize, "cloud");
 
     // Our state
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     bool show_another_window = false;
-    bool vtk_2_open = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+   
 
     // Main loop
 #ifdef __EMSCRIPTEN__
@@ -138,7 +139,11 @@ int main(int, char**)
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
-        NewFrame();
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
@@ -155,7 +160,7 @@ int main(int, char**)
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
-            ImGui::Checkbox("VTK Viewer #2", &vtk_2_open);
+            //ImGui::Checkbox("VTK Viewer #2", &vtk_2_open);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -179,11 +184,68 @@ int main(int, char**)
             ImGui::End();
         }
 
+        
+        ImGui::Begin("Change Colors");
+        ImGui::Text("Red Component");
+        if (ImGui::SliderInt("##Red", &pointColor[0], 0, 255) )
+        {
+            for (auto& point : *cloud)
+            {
+                point.r = pointColor[0];
+                point.g = pointColor[1];
+                point.b = pointColor[2];
+            }
+            pclViewer.updatePointCloud(cloud, "cloud");
+        }
+        ImGui::Text("Green Component");
+        if (ImGui::SliderInt("##Green", &pointColor[1], 0, 255))
+        {
+            for (auto& point : *cloud)
+            {
+                point.r = pointColor[0];
+                point.g = pointColor[1];
+                point.b = pointColor[2];
+            }
+            pclViewer.updatePointCloud(cloud, "cloud");
+        }
+        ImGui::Text("Blue Component");
+        if (ImGui::SliderInt("##Blue", &pointColor[2], 0, 255))
+        {
+            for (auto& point : *cloud)
+            {
+                point.r = pointColor[0];
+                point.g = pointColor[1];
+                point.b = pointColor[2];
+            }
+            pclViewer.updatePointCloud(cloud, "cloud");
+        }
+
+        ImGui::Text("Point size");
+        if (ImGui::SliderInt("##pointSize", &pointSize, 1, 5))
+        {
+            pclViewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_POINT_SIZE, pointSize, "cloud");
+        }
+
+        if (ImGui::Button("Random Colors"))
+        {
+
+            for (auto& point : *cloud)
+            {
+                point.r = 255 * (1024 * rand() / (RAND_MAX + 1.0f));
+                point.g = 255 * (1024 * rand() / (RAND_MAX + 1.0f));
+                point.b = 255 * (1024 * rand() / (RAND_MAX + 1.0f));
+            }
+
+            pclViewer.updatePointCloud(cloud, "cloud");
+        }
+        ImGui::End();
+
         // 4. Show a simple VtkViewer Instance (Always Open)
         ImGui::SetNextWindowSize(ImVec2(360, 240), ImGuiCond_FirstUseEver);
         ImGui::Begin("PointVloud Viewer", nullptr, VtkViewer::NoScrollFlags());
+        vtkViewer1.render();
 
-        vtkViewer1.render(); // default render size = ImGui::GetContentRegionAvail()
+        //loudViewer.RenderUI(); // default render size = ImGui::GetContentRegionAvail()
         ImGui::End();
 
         // Rendering
@@ -223,13 +285,7 @@ int main(int, char**)
     return 0;
 }
 
-void NewFrame()
-{
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-}
+
 
 
 
