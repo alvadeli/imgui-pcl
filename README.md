@@ -1,8 +1,6 @@
 # imgui-pcl
 
-
-
-![](imgui-pcl-demo.png)
+![](imgui-pcl-demo.gif)
 
 ## vcpkg
 

@@ -9,7 +9,6 @@ class PclCloudViewer{
 public:
 	PclCloudViewer();
 
-
 	void RenderUI();
 
 	void SetCloudPointSize(int pointSize, const std::string& name);
@@ -18,7 +17,6 @@ public:
 	template<class T>
 	void AddPointCloud(std::shared_ptr<pcl::PointCloud<T>> cloud,
 		const std::string& name);
-
 
 	template<class T>
 	void UpdatePointCloud(std::shared_ptr<pcl::PointCloud <T>> cloud,
