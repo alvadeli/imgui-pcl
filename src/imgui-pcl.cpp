@@ -242,7 +242,7 @@ int main(int, char**)
 
         // 4. Show a simple VtkViewer Instance (Always Open)
         ImGui::SetNextWindowSize(ImVec2(360, 240), ImGuiCond_FirstUseEver);
-        ImGui::Begin("PointVloud Viewer", nullptr, VtkViewer::NoScrollFlags());
+        ImGui::Begin("Pointcloud Viewer", nullptr, VtkViewer::NoScrollFlags());
         vtkViewer1.render();
 
         //loudViewer.RenderUI(); // default render size = ImGui::GetContentRegionAvail()
