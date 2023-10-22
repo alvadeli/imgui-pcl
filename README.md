@@ -1,5 +1,7 @@
 # imgui-pcl
 
+![](imgui-pcl-demo.png)
+
 ## vcpkg
 
 - https://github.com/microsoft/vcpkg
