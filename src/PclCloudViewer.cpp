@@ -22,7 +22,4 @@ void PclCloudViewer::SetCloudColor(int color[3], const std::string& cloudName)
 	pclViewer_->setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_COLOR, color[0], color[1], color[2], cloudName);
 }
 
-void PclCloudViewer::UpdatePointCloud(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, const std::string& name)
-{
-	pclViewer_->updatePointCloud(cloud, name);
-}
+

@@ -15,10 +15,13 @@ public:
 	void SetCloudPointSize(int pointSize, const std::string& name);
 	void SetCloudColor(int color[3], const std::string& name);
 
-	void UpdatePointCloud(pcl::PointCloud < pcl::PointXYZRGBA>::Ptr cloud, const std::string& name);
+	template<class T>
+	void AddPointCloud(std::shared_ptr<pcl::PointCloud<T>> cloud,
+		const std::string& name);
+
 
 	template<class T>
-	void AddPointCloud(std::shared_ptr<pcl::PointCloud<T>>& cloud,
+	void UpdatePointCloud(std::shared_ptr<pcl::PointCloud <T>> cloud,
 		const std::string& name);
 
 private:

@@ -228,7 +228,7 @@ int main(int, char**)
                 point.b = 255 * (1024 * rand() / (RAND_MAX + 1.0f));
             }
 
-            cloudViewer.UpdatePointCloud(cloud, "cloudName");
+            cloudViewer.UpdatePointCloud(cloud, cloudName);
         }
         ImGui::End();
 
