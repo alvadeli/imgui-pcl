@@ -1,6 +1,6 @@
 # imgui-pcl
 
-Imgui implementation of the QT PCL Visualiser Example of the [Point Cloud Library](https://github.com/PointCloudLibrary/pcl/tree/master) using [imgui-vtk](https://github.com/trlsmax/imgui-vtk).
+Imgui implementation of the QT PCL Visualizer Example of the [Point Cloud Library](https://github.com/PointCloudLibrary/pcl/tree/master) using [imgui-vtk](https://github.com/trlsmax/imgui-vtk).
 
 ![](Imgui-pcl-demo.gif)
 
