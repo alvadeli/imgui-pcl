@@ -7,7 +7,7 @@ Imgui implementation of the QT PCL Visualizer Example of the [Point Cloud Librar
 ## vcpkg
 
 - https://github.com/microsoft/vcpkg
-- windows: VCPKG_DEFAULT_TRIPLET=x64-windows
+- on windows: set env variable VCPKG_DEFAULT_TRIPLET=x64-windows
 
 ### Dependencies
 
